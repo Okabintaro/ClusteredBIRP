@@ -35,6 +35,17 @@
         [Space(10)]
         [Toggle(_CBIRP_DEBUG)] _CBIRPDebugModeEnable ("Debug", Float) = 0
         [Enum(Lights,0,Probes,1)] _CBIRPDebugMode ("Debug Mode", Float) = 0
+
+        [Toggle(_SSS_ON)] _SSS ("Subsurface Scatting", Float) = 0
+        _SSS_Distortion ("SSS Distortion", Range(0, 1)) = 0.1
+        _SSS_Power ("SSS Power", Range(1, 10)) = 2.0
+        _SSS_Scale ("SSS Scale", Range(0, 5)) = 1.0
+        _SSS_Attenuation ("SSS Attenuation", Range(0, 2)) = 1.0
+        _SSS_Ambient ("SSS Ambient", Range(0, 1)) = 0.1
+        _SSS_Thickness ("Thickness", Range(0, 1)) = 0.5
+
+        _Candle_Strength ("Candle Light Strength", Range(0, 5)) = 1.0
+        _Candle_Rangefactor ("Canle Rangefactor", Range(0, 1000)) = 1.0
     }
 
 HLSLINCLUDE
@@ -250,6 +261,8 @@ ENDHLSL
             #pragma shader_feature_local_fragment _GEOMETRIC_SPECULAR_AA
             uint _CBIRPDebugMode;
 
+            #pragma shader_feature_local _SSS_ON
+
             SamplerState custom_bilinear_clamp_sampler;
             Texture2D _DFG;
 
@@ -260,7 +273,7 @@ ENDHLSL
             #ifndef _BAKERY_MONOSH_OFF
             #define MONO_SH
             #endif
-            
+
             half4 frag (Varyings varyings) : SV_Target
             {
                 UNITY_SETUP_INSTANCE_ID(varyings);

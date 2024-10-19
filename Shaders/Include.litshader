@@ -7,7 +7,7 @@ CODE_START
 
     #define UNITY_PI PI
     #include <LightFunctions.hlsl>
-    #include "Packages/z3y.clusteredbirp/Shaders/CBIRP.hlsl"
+    #include "Assets/ClusteredBIRP/Shaders/CBIRP.hlsl"
     void ModifyLightingCBIRP(inout GIData giData, Varyings IN, ShaderData sd, inout SurfaceDescription surfaceDescription)
     {
         uint3 cluster = CBIRP::GetCluster(IN.positionWS);

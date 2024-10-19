@@ -12,6 +12,15 @@ SamplerState ies_bilinear_clamp_sampler;
 uniform float4 _Udon_CBIRP_PlayerPosition;
 uniform uint _Udon_CBIRP_DummyZero;
 
+uniform float _SSS_Distortion;
+uniform float _SSS_Power;
+uniform float _SSS_Scale;
+uniform float _SSS_Attenuation;
+uniform float _SSS_Ambient;
+uniform float _SSS_Thickness;
+uniform half _Candle_Strength;
+uniform half _Candle_Rangefactor;
+
 #include "Constants.hlsl"
 #include "Filament.hlsl"
 #include "Packing.hlsl"
@@ -252,6 +261,20 @@ debug+=1;
 
                 attenuation *= NoL;
                 debug += attenuation > 0;
+
+                #ifdef _SSS_ON
+                    // Inspired/taken from https://www.alanzucconi.com/2017/08/30/fast-subsurface-scattering-2/
+                    float3 H = normalize(L + normalWS * _SSS_Distortion);
+                    float VdotH = pow(saturate(dot(viewDirectionWS, -H)), _SSS_Power) * _SSS_Scale;
+                    float3 I = (VdotH + _SSS_Ambient) * _SSS_Thickness;
+                    diffuse += I * light.color;
+
+                    // Add some direction independent light to light candle from top without looking through it
+                    // TODO: Maybe there is a better way to do this?
+                    half distAtt = GetSquareFalloffAttenuationCustom(distanceSquare, light.range * _Candle_Rangefactor);
+                    diffuse += (distAtt * light.color) * _Candle_Strength;
+                    diffuse += I * light.color;
+                #endif
                 
                 UNITY_BRANCH
                 if (attenuation > 0)
