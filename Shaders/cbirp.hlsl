@@ -18,8 +18,9 @@ uniform float _SSS_Scale;
 uniform float _SSS_Attenuation;
 uniform float _SSS_Ambient;
 uniform float _SSS_Thickness;
+
 uniform half _Candle_Strength;
-uniform half _Candle_Rangefactor;
+uniform float _Candle_Rangefactor;
 
 #include "Constants.hlsl"
 #include "Filament.hlsl"
@@ -267,11 +268,11 @@ debug+=1;
                     float3 H = normalize(L + normalWS * _SSS_Distortion);
                     float VdotH = pow(saturate(dot(viewDirectionWS, -H)), _SSS_Power) * _SSS_Scale;
                     float3 I = (VdotH + _SSS_Ambient) * _SSS_Thickness;
-                    diffuse += I * light.color;
 
                     // Add some direction independent light to light candle from top without looking through it
                     // TODO: Maybe there is a better way to do this?
-                    half distAtt = GetSquareFalloffAttenuationCustom(distanceSquare, light.range * _Candle_Rangefactor);
+                    float dist = distanceSquare * _Candle_Rangefactor;
+                    half distAtt = GetSquareFalloffAttenuationCustom(dist, light.range);
                     diffuse += (distAtt * light.color) * _Candle_Strength;
                     diffuse += I * light.color;
                 #endif

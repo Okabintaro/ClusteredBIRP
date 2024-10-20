@@ -175,14 +175,29 @@ Cull Off
                     float3 color = prop0.rgb;
                     float intensity = prop0.a;
 
-                    half flickerSpeed = prop2.y;
-                    half flickerIntensity = prop2.z;
+                    // Flickering lights
+                    half flickerSpeed = prop2.z;
+                    half flickerIntensity = prop2.w;
                     bool flickering = flickerIntensity > 0;
-
-                    if (flickering)
+                    if (flickerIntensity > 0)
                     {
-                        intensity = lerp(intensity, rand(_Time.y * flickerSpeed * 0.005) * intensity, flickerIntensity);
+                        float seedMult = prop1.b;
+
+                        float3 lightPos = i.transformPosition.xyz;
+                        float seed = dot(lightPos, float3(12.9898, 78.233, 45.164)) * seedMult;
+
+                        float t = _Time.y * flickerSpeed + seed;
+                        
+                        float noise = sin(t) * 0.5 +
+                                    sin(t * 1.5 + seed) * 0.3 +
+                                    sin(t * 2.7 + seed * 2) * 0.2;
+                        
+                        noise *= 0.5; // Normalize to [-0.5, 0.5]
+                        
+                        float variation = noise * flickerIntensity * intensity;
+                        intensity = max(intensity + variation, 0);
                     }
+
 
                     float3 lightPosition = i.transformPosition.xyz;
 

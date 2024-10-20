@@ -38,6 +38,10 @@ namespace CBIRP
         //[Tooltip("Automatically set by the ies generator")]
         //[SerializeField] private int _iesID = -1;
 
+        public float flickerSpeed = 0f;
+        public float flickerIntensity = 0f;
+        public float flickerSeedMultiplier = 1f;
+
         public MeshRenderer meshRenderer;
         private MaterialPropertyBlock _propertyBlock;
         private Light _unityLight;
@@ -96,6 +100,11 @@ namespace CBIRP
 
             _data2.x = shadowMask ? _shadowMaskID : -1;
             _data2.y = specularOnlyShadowmask ? 1f : 0f;
+            _data2.z = flickerSpeed;
+            _data2.w = flickerIntensity;
+            if (lightType == LightType.Point) {
+                _data1.z = flickerSeedMultiplier;
+            }
 
             _propertyBlock.SetVector(_Data0ID, _data0);
             _propertyBlock.SetVector(_Data1ID, _data1);
@@ -179,6 +188,10 @@ namespace CBIRP
         SerializedProperty _shadowmask;
         SerializedProperty _specularOnlyShadowmask;
         SerializedProperty _destroy;
+        SerializedProperty _flickerSpeed;
+        SerializedProperty _flickerIntensity;
+        SerializedProperty _flickerSeedMultiplier;
+
 
         static Vector3 InstanciatePosition()
         {
@@ -213,10 +226,9 @@ namespace CBIRP
             _shadowmask = serializedObject.FindProperty(nameof(CBIRPLight.shadowMask));
             _specularOnlyShadowmask = serializedObject.FindProperty(nameof(CBIRPLight.specularOnlyShadowmask));
             _destroy = serializedObject.FindProperty(nameof(CBIRPLight.destroyComponent));
-
-
-
-
+            _flickerSpeed = serializedObject.FindProperty(nameof(CBIRPLight.flickerSpeed));
+            _flickerIntensity = serializedObject.FindProperty(nameof(CBIRPLight.flickerIntensity));
+            _flickerSeedMultiplier = serializedObject.FindProperty(nameof(CBIRPLight.flickerSeedMultiplier));
         }
 
         public override void OnInspectorGUI()
@@ -241,8 +253,13 @@ namespace CBIRP
             EditorGUILayout.PropertyField(_specularOnlyShadowmask);
             EditorGUILayout.PropertyField(_destroy);
 
-
-
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Flickering", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(_flickerSpeed);
+            EditorGUILayout.PropertyField(_flickerIntensity);
+            if (_type.intValue != (int)LightType.Spot) {
+                EditorGUILayout.PropertyField(_flickerSeedMultiplier);
+            }
 
             if (EditorGUI.EndChangeCheck())
             {
