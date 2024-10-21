@@ -219,7 +219,7 @@ namespace CBIRP
     //     return index_2d;
     // }
 
-    void ComputeLights(uint3 cluster, float3 positionWS, float3 normalWS, float3 viewDirectionWS, half3 f0, half NoV, half roughness, half4 shadowmask, inout half3 diffuse, inout half3 specular)
+    void ComputeLights(uint3 cluster, float3 positionWS, float3 normalWS, float3 viewDirectionWS, half3 f0, half NoV, half roughness, half4 shadowmask, half3 positionOS, inout half3 diffuse, inout half3 specular)
     {
         half clampedRoughness = max(roughness * roughness, 0.002);
         half debug = 0;
@@ -271,10 +271,23 @@ debug+=1;
 
                     // Add some direction independent light to light candle from top without looking through it
                     // TODO: Maybe there is a better way to do this?
-                    float dist = distanceSquare * _Candle_Rangefactor;
-                    half distAtt = GetSquareFalloffAttenuationCustom(dist, light.range);
-                    diffuse += (distAtt * light.color) * _Candle_Strength;
                     diffuse += I * light.color;
+                    #ifdef _FAKE_CANDLE_ON
+                        // Determine if the vertex is in the upper half based on its y-position
+                        if (light.hasShadowmask) {
+                            float upperHalf = smoothstep(_ThresholdBottom, _ThresholdTop,  positionOS.y);
+                            fixed4 _LowerColor = fixed4(0.1, 0.1, 0.1, 1.0);
+                            fixed4 finalColor = lerp(_LowerColor, _CandleLightColor, upperHalf);
+                            diffuse += finalColor * light.color * _Candle_Strength;
+                        }
+                    #else
+
+                        float dist = distanceSquare * _Candle_Rangefactor;
+                        half distAtt = GetSquareFalloffAttenuationCustom(dist, light.range);
+                        diffuse += (distAtt * light.color) * _Candle_Strength;
+
+                    #endif // _FAKE_CANDLE_ON
+
                 #endif
                 
                 UNITY_BRANCH
